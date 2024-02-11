@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stricktemplate</title>
+    <link href="knit_template.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+<script type="module" src="knit_elements.js"></script>
+
+
+<form target="_self" action="./knit_template.html" onsubmit="return confirm('Are you sure you want to update the chart? This will remove all existing stitches.');">
+    <fieldset>
+        <legend>Chart settings</legend>
+        <label>Width</label>
+        <input type="number" name="width">
+        <label>Height</label>
+        <input type="number" name="height">
+        <button>Update</button>
+    </fieldset>
+    <fieldset>
+        <legend>Actions</legend>
+        <button id="save-button" type="button">Download chart</button>
+    </fieldset>
+</form>
+<script type="module">
+    document.querySelector('input[name="width"]').value = new URLSearchParams(window.location.search).get("width") || "";
+    document.querySelector('input[name="height"]').value = new URLSearchParams(window.location.search).get("height") || "";
+</script>
+<knit-template></knit-template>
+<script type="module">
+    const searchParams = new URLSearchParams(window.location.search);
+    const width = Number.parseInt(searchParams.get("width"));
+    const height = Number.parseInt(searchParams.get("height"));
+    const container = document.querySelector("knit-template");
+    if (width && height) {
+        container.querySelectorAll("knit-row").forEach(row => row.remove());
+        for (let y = 0; y < height; y++) {
+            const row = document.createElement("knit-row");
+            for (let x = 0; x < width; x++) {
+                const stitch = document.createElement("knit-stitch");
+                stitch.setAttribute("type", "right");
+                row.insertAdjacentElement("beforeend", stitch);
+            }
+            row.setAttribute("row", `${y + 1}`);
+            container.insertAdjacentElement("beforeend", row);
+        }
+    }
+    const types = ["right", "left", "loop", "together"];
+    for (const stitch of container.querySelectorAll("knit-stitch")) {
+        const setNextType = (back = false) => {
+            const index = types.indexOf(stitch.getAttribute("type"));
+            let nextIndex = types.length + index;
+            nextIndex += back ? -1 : 1;
+            nextIndex %= types.length;
+            stitch.setAttribute("type", types[nextIndex]);
+        };
+        stitch.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            if (e.pressure) setNextType(e.button === 2 || e.buttons === 2)
+        });
+        stitch.addEventListener("pointerenter", (e) => {
+            e.preventDefault();
+            if (e.pressure) setNextType(e.button === 2 || e.buttons === 2)
+        });
+        stitch.addEventListener("contextmenu", e => e.preventDefault());
+    }
+</script>
+
+<script type="module">
+    import init, {minify} from 'https://cdn.jsdelivr.net/npm/minify-html-wasm@0.1.1/+esm'
+
+    async function tryInit() {
+        tryInit = async () => {};
+        console.info("init wasm")
+        await init("https://cdn.jsdelivr.net/npm/minify-html-wasm@0.1.1/dist/web/index_bg.wasm");
+    }
+
+    const saveButton = document.getElementById("save-button");
+    saveButton.addEventListener("click", async () => {
+        await tryInit()
+
+        const outerHTML = document.querySelector("knit-template").outerHTML;
+        const styleSheet = Array.from(document.styleSheets).find(ss => ss.href.endsWith("knit_template.css"));
+        const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Knitting chart</title>
+        <style>${Array.from(styleSheet.cssRules).map(rule => rule.cssText).join('').replaceAll(/\s+/g, ' ')}</style>
+    </head>
+    <body>
+        ${outerHTML}
+    </body>
+</html>`
+            //replace all the long names with short ones
+            .replaceAll("knit-template", "k-t")
+            .replaceAll("knit-row", "k-r")
+            .replaceAll("knit-stitch", "k-s")
+            .replaceAll("type", "t")
+            .replaceAll("right", "r")
+            .replaceAll("left", "l")
+            .replaceAll("loop", "o")
+            .replaceAll("together", "t");
+
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+
+        //minify the html
+        const minified = decoder.decode(
+            minify(encoder.encode(htmlContent), {
+
+            })
+        );
+        // Create a new Blob object with the HTML content
+        const blob = new Blob([minified], {type: 'text/html'});
+
+        // Create a URL for the Blob object
+        const url = URL.createObjectURL(blob);
+
+        // Create a link element
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Set the download attribute with the desired file name
+        link.download = 'knitting_chart.html';
+
+        // Append the link to the document body
+        document.body.appendChild(link);
+
+        // Trigger a click event on the link to start the download
+        link.click();
+
+        // Remove the link from the document body
+        document.body.removeChild(link);
+
+        // Clean up by revoking the URL object after use
+        URL.revokeObjectURL(url);
+    })
+</script>
+</body>
+</html>
