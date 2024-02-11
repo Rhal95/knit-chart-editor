@@ -5,12 +5,11 @@
     <title>Stricktemplate</title>
     <link href="knit_template.css" type="text/css" rel="stylesheet">
 </head>
-<body>
+<body style="display: flex; flex-direction: column; gap: 1em">
 <script type="module" src="knit_elements.js"></script>
 
-
 <form target="_self" action="./knit_template.html" onsubmit="return confirm('Are you sure you want to update the chart? This will remove all existing stitches.');">
-    <fieldset>
+    <fieldset style="display: flex; flex-wrap: wrap; gap: 1em">
         <legend>Chart settings</legend>
         <label>Width</label>
         <input type="number" name="width">
@@ -18,16 +17,34 @@
         <input type="number" name="height">
         <button>Update</button>
     </fieldset>
-    <fieldset>
-        <legend>Actions</legend>
-        <button id="save-button" type="button">Download chart</button>
-    </fieldset>
 </form>
+
+<fieldset>
+    <legend>Actions</legend>
+    <button id="save-button" type="button">Download chart</button>
+</fieldset>
+
 <script type="module">
     document.querySelector('input[name="width"]').value = new URLSearchParams(window.location.search).get("width") || "";
     document.querySelector('input[name="height"]').value = new URLSearchParams(window.location.search).get("height") || "";
 </script>
 <knit-template></knit-template>
+<fieldset>
+    <legend>Legend</legend>
+    <dl style="display: grid; grid-template-columns: min-content auto; align-items: center;" >
+        <dt><knit-template><knit-stitch type="right"></knit-stitch></knit-template></dt>
+        <dd>Stitch</dd>
+
+        <dt><knit-template><knit-stitch type="left"></knit-stitch></knit-template></dt>
+        <dd>Purl</dd>
+
+        <dt><knit-template><knit-stitch type="loop"></knit-stitch></knit-template></dt>
+        <dd>Yarn over</dd>
+
+        <dt><knit-template><knit-stitch type="together"></knit-stitch></knit-template></dt>
+        <dd>Knit two together</dd>
+    </dl>
+</fieldset>
 <script type="module">
     const searchParams = new URLSearchParams(window.location.search);
     const width = Number.parseInt(searchParams.get("width"));
