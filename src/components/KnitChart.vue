@@ -93,6 +93,7 @@ function releaseCanvas() {
 <template>
   <main class="knit-chart">
     <canvas
+        id="knit-chart-canvas"
         v-once
         ref="canvas"
         @pointerdown="clickCanvas"

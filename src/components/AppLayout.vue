@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<style scoped lang="postcss">
+<style lang="postcss">
 .container {
   display: grid;
   grid-template-areas:
