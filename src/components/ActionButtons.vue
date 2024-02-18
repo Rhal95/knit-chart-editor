@@ -1,13 +1,13 @@
 <template>
   <div>
     <button disabled>Load</button>
-    <button disabled>Save</button>
-    <button disabled>Export</button>
+    <DownloadButton/>
     <PrintButton/>
   </div>
 </template>
 
 <script setup lang="ts">
+import DownloadButton from "./actions/DownloadButton.vue";
 import PrintButton from "./actions/PrintButton.vue";
 </script>
 
